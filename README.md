@@ -1,11 +1,11 @@
-# ⚡ PokéDex API — Terminal Edition
+# ⚡ PokéZay API — Terminal Edition
 
 API REST complète construite avec **Node.js + Express**, avec une interface graphique style terminal rétro-pixel pour explorer les Pokémons.
 
 ## 🚀 Démo en ligne (Vercel)
 
 Déployez sur Vercel et accédez à votre Pokédex en ligne :
-**[👉 Votre Pokédex sur Vercel](https://vercel.com)**
+**[👉 Votre Pokédex sur Vercel](https://pokemon-api-murex-pi.vercel.app/)**
 
 ---
 
@@ -28,7 +28,7 @@ pokedex-api/
 
 ```bash
 # 1. Cloner le projet
-git clone <votre-repo>
+git clone <https://github.com/minna-lab/POKEMON-API.git>
 cd pokedex-api
 
 # 2. Installer les dépendances
