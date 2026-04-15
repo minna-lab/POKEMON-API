@@ -1,0 +1,20 @@
+{
+  "name": "pokedex-api",
+  "version": "1.0.0",
+  "description": "API REST Pokédex avec interface graphique — Node.js + Express",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon index.js"
+  },
+  "keywords": ["pokemon", "api", "express", "nodejs"],
+  "author": "Pokédex Project",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^5.2.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  }
+}

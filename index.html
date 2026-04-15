@@ -1,0 +1,1171 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pokédex</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0b0b12;
+      --panel: #111120;
+      --panel2: #18182a;
+      --line: rgba(120, 80, 255, 0.18);
+      --line2: rgba(120, 80, 255, 0.32);
+      --text: #e8e0ff;
+      --muted: #8f89b8;
+      --brand: #7c4dff;
+      --brand2: #b47cff;
+      --good: #7affcc;
+      --danger: #ff6b9d;
+      --shadow: 0 18px 46px rgba(0, 0, 0, 0.35);
+      --glass: rgba(17, 17, 32, 0.82);
+    }
+
+    body.light {
+      --bg: #f6f2ff;
+      --panel: #ffffff;
+      --panel2: #f2ebff;
+      --line: rgba(124, 77, 255, 0.15);
+      --line2: rgba(124, 77, 255, 0.28);
+      --text: #261f45;
+      --muted: #6f6598;
+      --glass: rgba(255, 255, 255, 0.84);
+      --shadow: 0 18px 40px rgba(101, 77, 155, 0.16);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html,
+    body {
+      min-height: 100%;
+      scrollbar-width: none;
+    }
+
+    body::-webkit-scrollbar,
+    .sidebar::-webkit-scrollbar,
+    .panel::-webkit-scrollbar {
+      width: 0;
+      height: 0;
+    }
+
+    body {
+      font-family: Inter, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(124, 77, 255, 0.14), transparent 24%),
+        radial-gradient(circle at bottom right, rgba(255, 107, 157, 0.10), transparent 20%),
+        var(--bg);
+      transition: 0.25s;
+      overflow-x: hidden;
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+
+    body::before,
+    body::after {
+      content: "";
+      position: fixed;
+      pointer-events: none;
+      filter: blur(90px);
+      opacity: 0.16;
+      border-radius: 50%;
+    }
+
+    body::before {
+      width: 260px;
+      height: 260px;
+      left: -90px;
+      top: 20px;
+      background: var(--brand);
+    }
+
+    body::after {
+      width: 280px;
+      height: 280px;
+      right: -120px;
+      bottom: -80px;
+      background: var(--danger);
+    }
+
+    .shell {
+      width: 100%;
+      min-height: 100vh;
+      padding: 18px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .header {
+      margin-bottom: 18px;
+    }
+
+    .page-title {
+      font-family: Syne, sans-serif;
+      font-size: clamp(2.4rem, 4.5vw, 5rem);
+      line-height: 0.92;
+      letter-spacing: -0.06em;
+    }
+
+    .page-title span {
+      background: linear-gradient(90deg, var(--brand), var(--brand2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 18px;
+      min-height: calc(100vh - 120px);
+    }
+
+    .sidebar,
+    .panel,
+    .card,
+    .modal-box,
+    .top-card {
+      backdrop-filter: blur(14px);
+      background: var(--glass);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+    }
+
+    .sidebar {
+      border-radius: 28px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      overflow: auto;
+    }
+
+    .section {
+      display: grid;
+      gap: 10px;
+    }
+
+    .section-title {
+      font-size: 0.82rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+    }
+
+    .field,
+    .select,
+    .btn,
+    .ghost,
+    .chip,
+    .close,
+    .icon-btn,
+    .mode-btn {
+      border-radius: 16px;
+    }
+
+    .field,
+    .select {
+      padding: 13px 14px;
+      border: 1px solid var(--line);
+      background: var(--panel2);
+      color: var(--text);
+    }
+
+    .field:focus,
+    .select:focus {
+      outline: none;
+      border-color: var(--brand);
+      box-shadow: 0 0 0 4px rgba(124, 77, 255, 0.12);
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .btn,
+    .mode-btn,
+    .icon-btn {
+      border: none;
+      cursor: pointer;
+      padding: 12px 14px;
+    }
+
+    .btn {
+      background: linear-gradient(90deg, var(--brand), var(--brand2));
+      color: #fff;
+    }
+
+    .ghost,
+    .mode-btn,
+    .icon-btn {
+      background: var(--panel2);
+      color: var(--text);
+      border: 1px solid var(--line);
+      cursor: pointer;
+      padding: 12px 14px;
+    }
+
+    .btn:hover,
+    .ghost:hover,
+    .chip:hover,
+    .mode-btn:hover,
+    .icon-btn:hover,
+    .mode-btn.active,
+    .chip.active,
+    .ghost.active {
+      background: linear-gradient(90deg, var(--brand), var(--brand2));
+      color: #fff;
+      border-color: transparent;
+    }
+
+    .types {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .chip {
+      padding: 8px 12px;
+      background: var(--panel2);
+      color: var(--text);
+      border: 1px solid var(--line);
+      cursor: pointer;
+      border-radius: 999px;
+    }
+
+    .content {
+      min-width: 0;
+      display: grid;
+      gap: 16px;
+      grid-template-rows: auto auto 1fr;
+    }
+
+    .middle-header {
+      display: grid;
+      gap: 14px;
+    }
+
+    .quick-view {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .quick-box {
+      padding: 16px;
+      border-radius: 20px;
+      background: var(--glass);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+      text-align: center;
+      backdrop-filter: blur(14px);
+    }
+
+    .quick-box span {
+      display: block;
+      color: var(--muted);
+      font-size: 0.82rem;
+      margin-bottom: 6px;
+    }
+
+    .quick-box strong {
+      display: block;
+      font: 800 1.5rem Syne, sans-serif;
+      color: var(--text);
+    }
+
+    .middle-desc {
+      padding: 16px 18px;
+      border-radius: 20px;
+      background: var(--glass);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+      color: var(--muted);
+      line-height: 1.6;
+      font-size: 0.95rem;
+      backdrop-filter: blur(14px);
+    }
+
+    .top-bar {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 16px;
+      align-items: stretch;
+    }
+
+    .top-card {
+      border-radius: 24px;
+      padding: 16px;
+    }
+
+    .summary {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      color: var(--muted);
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      padding: 10px 12px;
+      background: var(--panel2);
+      color: var(--muted);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+    }
+
+    .right-tools {
+      display: flex;
+      align-items: stretch;
+      min-width: 160px;
+    }
+
+    .right-tools .top-card {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .panel {
+      border-radius: 28px;
+      padding: 18px;
+      min-height: 0;
+    }
+
+    .grid-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 14px;
+      color: var(--muted);
+      flex-wrap: wrap;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 16px;
+    }
+
+    .card {
+      position: relative;
+      border-radius: 24px;
+      padding: 18px;
+      overflow: hidden;
+      transition: 0.22s;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent), var(--glass);
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      border-color: var(--line2);
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      right: -32px;
+      top: -38px;
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      background: radial-gradient(circle, var(--accent, var(--brand)), transparent 70%);
+      opacity: 0.12;
+    }
+
+    .card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .id {
+      color: var(--muted);
+      font-size: 0.84rem;
+    }
+
+    .fav {
+      border: none;
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      background: var(--panel2);
+      color: var(--muted);
+      cursor: pointer;
+      border: 1px solid var(--line);
+      font-size: 1.15rem;
+      line-height: 1;
+      display: grid;
+      place-items: center;
+      transition: 0.2s;
+    }
+
+    .fav:hover {
+      transform: scale(1.08);
+      border-color: var(--line2);
+    }
+
+    .fav.on {
+      color: #ff4d6d;
+      background: rgba(255, 77, 109, 0.12);
+      border-color: rgba(255, 77, 109, 0.28);
+    }
+
+    .thumb {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 116px;
+      margin: 8px 0 12px;
+    }
+
+    .thumb img {
+      width: 100px;
+      height: 100px;
+      object-fit: contain;
+      filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.24));
+      transition: 0.2s;
+    }
+
+    .card:hover img {
+      transform: scale(1.08);
+    }
+
+    .name {
+      font-family: Syne, sans-serif;
+      font-size: 1.2rem;
+      margin-bottom: 12px;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .stat {
+      padding: 12px;
+      border-radius: 16px;
+      background: var(--panel2);
+      border: 1px solid var(--line);
+    }
+
+    .stat small {
+      display: block;
+      color: var(--muted);
+      font-size: 0.75rem;
+      margin-bottom: 4px;
+    }
+
+    .stat b {
+      font-size: 1.08rem;
+    }
+
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .tag {
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .card-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .card-actions .btn,
+    .card-actions .ghost {
+      flex: 1;
+    }
+
+    .empty {
+      padding: 55px 20px;
+      text-align: center;
+      color: var(--muted);
+      border: 1px dashed var(--line2);
+      border-radius: 22px;
+    }
+
+    .toast {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      background: var(--panel);
+      color: var(--text);
+      padding: 12px 14px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      transform: translateY(18px);
+      opacity: 0;
+      transition: 0.2s;
+      z-index: 40;
+    }
+
+    .toast.show {
+      transform: none;
+      opacity: 1;
+    }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(7, 7, 18, 0.64);
+      display: none;
+      place-items: center;
+      padding: 20px;
+      z-index: 30;
+    }
+
+    .modal.open {
+      display: grid;
+    }
+
+    .modal-box {
+      width: min(760px, 100%);
+      border-radius: 26px;
+      padding: 22px;
+    }
+
+    .modal-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      gap: 14px;
+    }
+
+    .close {
+      width: 42px;
+      height: 42px;
+      background: var(--panel2);
+      color: var(--text);
+      cursor: pointer;
+      border: 1px solid var(--line);
+    }
+
+    .detail {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      gap: 22px;
+      margin-top: 12px;
+    }
+
+    .art {
+      display: grid;
+      place-items: center;
+      border-radius: 22px;
+      background: linear-gradient(180deg, rgba(124, 77, 255, 0.16), rgba(180, 124, 255, 0.06));
+      min-height: 220px;
+    }
+
+    .art img {
+      width: 170px;
+      height: 170px;
+      object-fit: contain;
+    }
+
+    .detail h2 {
+      font-family: Syne, sans-serif;
+      font-size: 2rem;
+      margin-bottom: 10px;
+    }
+
+    .row-info {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 12px 0 14px;
+    }
+
+    .info {
+      padding: 12px 14px;
+      border-radius: 16px;
+      background: var(--panel2);
+      border: 1px solid var(--line);
+      min-width: 110px;
+    }
+
+    .info span {
+      display: block;
+      color: var(--muted);
+      font-size: 0.8rem;
+      margin-bottom: 4px;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 18px;
+    }
+
+    .edit-form {
+      display: none;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .edit-form.open {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .edit-form .full {
+      grid-column: 1 / -1;
+    }
+
+    [data-type="Feu"] { --accent: #ff7b5e; }
+    [data-type="Eau"] { --accent: #48bfff; }
+    [data-type="Plante"] { --accent: #5ee48a; }
+    [data-type="Poison"] { --accent: #c084fc; }
+    [data-type="Electrik"] { --accent: #facc15; }
+    [data-type="Normal"] { --accent: #b2bfd2; }
+    [data-type="Vol"] { --accent: #8ec5ff; }
+    [data-type="Insecte"] { --accent: #83e6a2; }
+    [data-type="Fée"] { --accent: #f9a8d4; }
+
+    @media (max-width: 1180px) {
+      .top-bar {
+        grid-template-columns: 1fr;
+      }
+
+      .right-tools {
+        min-width: 0;
+      }
+    }
+
+    @media (max-width: 1100px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .detail {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .shell {
+        padding: 14px;
+      }
+
+      .row,
+      .edit-form,
+      .quick-view {
+        grid-template-columns: 1fr;
+      }
+
+      .grid-head,
+      .summary {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .page-title {
+        font-size: 2.6rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header class="header">
+      <h1 class="page-title">POKÉ<span>ZAY</span></h1>
+    </header>
+
+    <div class="layout">
+      <aside class="sidebar">
+        <div class="section">
+          <div class="section-title">Recherche</div>
+          <input id="search" class="field" type="text" placeholder="Rechercher un Pokémon...">
+        </div>
+
+        <div class="section">
+          <div class="section-title">Tri</div>
+          <div class="row">
+            <select id="sort" class="select">
+              <option value="id">ID</option>
+              <option value="name">Nom</option>
+              <option value="hp">HP</option>
+              <option value="cp">CP</option>
+            </select>
+            <select id="order" class="select">
+              <option value="asc">Croissant</option>
+              <option value="desc">Décroissant</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-title">Types</div>
+          <div id="typeFilters" class="types"></div>
+        </div>
+
+        <div class="section">
+          <div class="section-title">Actions</div>
+          <div class="row">
+            <button id="favOnly" class="ghost">Favoris</button>
+            <button id="resetBtn" class="ghost">Réinitialiser</button>
+          </div>
+        </div>
+      </aside>
+
+      <main class="content">
+        <div class="middle-header">
+          <div class="quick-view">
+            <div class="quick-box">
+              <span>Total</span>
+              <strong id="kpiTotal">0</strong>
+            </div>
+
+            <div class="quick-box">
+              <span>Affichés</span>
+              <strong id="kpiShown">0</strong>
+            </div>
+
+            <div class="quick-box">
+              <span>Favoris</span>
+              <strong id="kpiFav">0</strong>
+            </div>
+          </div>
+
+          <p class="middle-desc">
+Plonge dans ton Pokézay vivant. Traque chaque espèce, marque tes légendes et inspecte chaque fiche d'un simple clic — ta quête commence ici.          </p>
+        </div>
+
+        <div class="top-bar">
+          <div class="top-card summary">
+            <span id="summaryText">—</span>
+            <div class="badge" id="resultText">Chargement...</div>
+          </div>
+
+          <div class="right-tools">
+            <div class="top-card">
+              <button id="themeBtn" class="mode-btn">Mode sombre</button>
+            </div>
+          </div>
+        </div>
+
+        <section class="panel">
+          <div class="grid-head">
+            <span>Clique sur une carte pour voir le détail.</span>
+            <span>Utilise Modifier pour éditer un Pokémon.</span>
+          </div>
+          <div id="grid" class="grid"></div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <div id="modal" class="modal">
+    <div class="modal-box">
+      <div class="modal-top">
+        <div>
+          <small id="mId" style="color: var(--muted)">#000</small>
+          <h2 id="mName">Pokémon</h2>
+        </div>
+        <button id="closeModal" class="close">✕</button>
+      </div>
+
+      <div class="detail">
+        <div class="art">
+          <img id="mImg" alt="Pokémon">
+        </div>
+
+        <div>
+          <div class="row-info">
+            <div class="info">
+              <span>HP</span>
+              <b id="mHp">0</b>
+            </div>
+            <div class="info">
+              <span>CP</span>
+              <b id="mCp">0</b>
+            </div>
+            <div class="info">
+              <span>Créé le</span>
+              <b id="mDate">-</b>
+            </div>
+          </div>
+
+          <div id="mTypes" class="tags"></div>
+
+          <div class="actions">
+            <button id="copyName" class="btn">Copier le nom</button>
+            <button id="toggleFavModal" class="ghost">Ajouter aux favoris</button>
+            <button id="editToggle" class="ghost">Modifier</button>
+          </div>
+
+          <form id="editForm" class="edit-form">
+            <input id="eName" class="field full" placeholder="Nom">
+            <input id="eHp" class="field" type="number" min="1" placeholder="HP">
+            <input id="eCp" class="field" type="number" min="1" placeholder="CP">
+            <input id="ePicture" class="field full" placeholder="URL image">
+            <input id="eTypes" class="field full" placeholder="Types séparés par des virgules">
+            <button type="submit" class="btn">Enregistrer</button>
+            <button type="button" id="cancelEdit" class="ghost">Annuler</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script>
+    const localApi = ["localhost", "127.0.0.1"].includes(location.hostname)
+      ? "http://localhost:3003/api/pokemons"
+      : "/api/pokemons";
+
+    const $ = (selector) => document.querySelector(selector);
+
+    const els = {
+      grid: $("#grid"),
+      search: $("#search"),
+      sort: $("#sort"),
+      order: $("#order"),
+      typeFilters: $("#typeFilters"),
+      favOnly: $("#favOnly"),
+      reset: $("#resetBtn"),
+      themeBtn: $("#themeBtn"),
+      modal: $("#modal"),
+      editForm: $("#editForm"),
+      toast: $("#toast")
+    };
+
+    let all = [];
+    let filtered = [];
+    let activeType = "Tous";
+    let favOnly = false;
+    let current = null;
+    let editing = false;
+
+    const favorites = new Set(JSON.parse(localStorage.getItem("pokedex-favorites") || "[]"));
+    const theme = localStorage.getItem("pokedex-theme") || "dark";
+
+    if (theme === "light") {
+      document.body.classList.add("light");
+    }
+
+    const colors = {
+      Feu: "#ff7b5e",
+      Eau: "#48bfff",
+      Plante: "#5ee48a",
+      Poison: "#c084fc",
+      Electrik: "#facc15",
+      Normal: "#b2bfd2",
+      Vol: "#8ec5ff",
+      Insecte: "#83e6a2",
+      Fée: "#f9a8d4"
+    };
+
+    const pad = (n) => String(n).padStart(3, "0");
+
+    const saveFav = () => {
+      localStorage.setItem("pokedex-favorites", JSON.stringify([...favorites]));
+    };
+
+    const toast = (msg) => {
+      els.toast.textContent = msg;
+      els.toast.classList.add("show");
+      clearTimeout(els.toast.t);
+      els.toast.t = setTimeout(() => els.toast.classList.remove("show"), 1600);
+    };
+
+    const tags = (types) => types.map((t) => `
+      <span
+        class="tag"
+        style="color:${colors[t] || "var(--text)"};border-color:${colors[t] || "#999"}33;background:${colors[t] || "#999"}14"
+      >${t}</span>
+    `).join("");
+
+    function setThemeLabel() {
+      els.themeBtn.textContent = document.body.classList.contains("light")
+        ? "Mode clair"
+        : "Mode sombre";
+    }
+
+    async function load() {
+      try {
+        const res = await fetch(localApi);
+        if (!res.ok) throw new Error();
+        all = (await res.json()).data || [];
+        buildTypeFilters();
+        apply();
+      } catch {
+        els.grid.innerHTML = '<div class="empty">Impossible de charger les Pokémons. Vérifie que le serveur est lancé.</div>';
+        $("#resultText").textContent = "Erreur de chargement";
+      }
+    }
+
+    function buildTypeFilters() {
+      const types = ["Tous", ...new Set(all.flatMap((p) => p.types || []))];
+      els.typeFilters.innerHTML = types.map((t) => `
+        <button class="chip ${t === activeType ? "active" : ""}" data-type="${t}">${t}</button>
+      `).join("");
+    }
+
+    function apply() {
+      const q = els.search.value.trim().toLowerCase();
+
+      filtered = all.filter((p) => {
+        const matchesName = p.name.toLowerCase().includes(q);
+        const matchesFav = !favOnly || favorites.has(p.id);
+        const matchesType = activeType === "Tous" || (p.types || []).includes(activeType);
+        return matchesName && matchesFav && matchesType;
+      });
+
+      filtered.sort((a, b) => {
+        const key = els.sort.value;
+        const value = key === "name"
+          ? a.name.localeCompare(b.name)
+          : (+a[key] || 0) - (+b[key] || 0);
+        return els.order.value === "asc" ? value : -value;
+      });
+
+      render();
+    }
+
+    function render() {
+      $("#kpiTotal").textContent = all.length;
+      $("#kpiShown").textContent = filtered.length;
+      $("#kpiFav").textContent = favorites.size;
+
+      $("#resultText").textContent = `${filtered.length} Pokémon(s)`;
+      $("#summaryText").textContent = activeType === "Tous"
+        ? "Tous les types"
+        : `Filtre actif : ${activeType}`;
+
+      if (!filtered.length) {
+        els.grid.innerHTML = '<div class="empty">Aucun Pokémon ne correspond à ta recherche.</div>';
+        return;
+      }
+
+      els.grid.innerHTML = filtered.map((p) => `
+        <article class="card" data-id="${p.id}" data-type="${(p.types || ["Normal"])[0]}">
+          <div class="card-top">
+            <span class="id">#${pad(p.id)}</span>
+            <button class="fav ${favorites.has(p.id) ? "on" : ""}" data-fav="${p.id}" aria-label="Favori">♥</button>
+          </div>
+
+          <div class="thumb">
+            <img src="${p.picture}" alt="${p.name}" loading="lazy">
+          </div>
+
+          <div class="name">${p.name}</div>
+
+          <div class="stats">
+            <div class="stat">
+              <small>HP</small>
+              <b>${p.hp}</b>
+            </div>
+            <div class="stat">
+              <small>CP</small>
+              <b>${p.cp}</b>
+            </div>
+          </div>
+
+          <div class="tags">${tags(p.types || [])}</div>
+
+          <div class="card-actions">
+            <button class="ghost" data-open="${p.id}">Voir</button>
+            <button class="btn" data-edit="${p.id}">Modifier</button>
+          </div>
+        </article>
+      `).join("");
+    }
+
+    function toggleFav(id) {
+      id = +id;
+
+      if (favorites.has(id)) {
+        favorites.delete(id);
+      } else {
+        favorites.add(id);
+      }
+
+      saveFav();
+      apply();
+
+      if (current?.id === id) {
+        updateModalFav();
+      }
+
+      toast(favorites.has(id) ? "Ajouté aux favoris" : "Retiré des favoris");
+    }
+
+    function openModal(id, openEdit = false) {
+      current = all.find((p) => p.id === +id);
+      if (!current) return;
+
+      $("#mId").textContent = "#" + pad(current.id);
+      $("#mName").textContent = current.name;
+      $("#mImg").src = current.picture;
+      $("#mImg").alt = current.name;
+      $("#mHp").textContent = current.hp;
+      $("#mCp").textContent = current.cp;
+      $("#mDate").textContent = new Date(current.created).toLocaleDateString("fr-FR");
+      $("#mTypes").innerHTML = tags(current.types || []);
+
+      updateModalFav();
+      fillEditForm();
+      toggleEdit(openEdit);
+      els.modal.classList.add("open");
+    }
+
+    function updateModalFav() {
+      $("#toggleFavModal").textContent = favorites.has(current.id)
+        ? "Retirer des favoris"
+        : "Ajouter aux favoris";
+    }
+
+    function fillEditForm() {
+      $("#eName").value = current.name || "";
+      $("#eHp").value = current.hp || "";
+      $("#eCp").value = current.cp || "";
+      $("#ePicture").value = current.picture || "";
+      $("#eTypes").value = (current.types || []).join(", ");
+    }
+
+    function toggleEdit(force) {
+      editing = typeof force === "boolean" ? force : !editing;
+      els.editForm.classList.toggle("open", editing);
+      $("#editToggle").textContent = editing ? "Fermer la modification" : "Modifier";
+    }
+
+    async function saveEdit(e) {
+      e.preventDefault();
+      if (!current) return;
+
+      const body = {
+        name: $("#eName").value.trim(),
+        hp: +$("#eHp").value,
+        cp: +$("#eCp").value,
+        picture: $("#ePicture").value.trim(),
+        types: $("#eTypes").value.split(",").map((t) => t.trim()).filter(Boolean)
+      };
+
+      try {
+        const res = await fetch(`${localApi}/${current.id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body)
+        });
+
+        if (!res.ok) throw new Error();
+
+        const json = await res.json();
+        const index = all.findIndex((p) => p.id === current.id);
+        all[index] = json.data;
+        buildTypeFilters();
+        apply();
+        openModal(current.id, false);
+        toast("Pokémon modifié");
+      } catch {
+        toast("Modification impossible");
+      }
+    }
+
+    els.search.addEventListener("input", apply);
+    els.sort.addEventListener("change", apply);
+    els.order.addEventListener("change", apply);
+
+    els.favOnly.addEventListener("click", () => {
+      favOnly = !favOnly;
+      els.favOnly.classList.toggle("active", favOnly);
+      apply();
+    });
+
+    els.reset.addEventListener("click", () => {
+      els.search.value = "";
+      els.sort.value = "id";
+      els.order.value = "asc";
+      activeType = "Tous";
+      favOnly = false;
+      els.favOnly.classList.remove("active");
+      buildTypeFilters();
+      apply();
+    });
+
+    els.typeFilters.addEventListener("click", (e) => {
+      const button = e.target.closest("[data-type]");
+      if (!button) return;
+
+      activeType = button.dataset.type;
+
+      [...els.typeFilters.children].forEach((child) => {
+        child.classList.toggle("active", child === button);
+      });
+
+      apply();
+    });
+
+    els.grid.addEventListener("click", (e) => {
+      const fav = e.target.closest("[data-fav]");
+      if (fav) return toggleFav(fav.dataset.fav);
+
+      const open = e.target.closest("[data-open]");
+      if (open) return openModal(open.dataset.open, false);
+
+      const edit = e.target.closest("[data-edit]");
+      if (edit) return openModal(edit.dataset.edit, true);
+
+      const card = e.target.closest(".card");
+      if (card) openModal(card.dataset.id, false);
+    });
+
+    $("#closeModal").addEventListener("click", () => els.modal.classList.remove("open"));
+    els.modal.addEventListener("click", (e) => e.target === els.modal && els.modal.classList.remove("open"));
+    document.addEventListener("keydown", (e) => e.key === "Escape" && els.modal.classList.remove("open"));
+
+    $("#toggleFavModal").addEventListener("click", () => toggleFav(current.id));
+
+    $("#copyName").addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(current.name);
+        toast("Nom copié");
+      } catch {
+        toast("Copie impossible");
+      }
+    });
+
+    $("#editToggle").addEventListener("click", () => toggleEdit());
+    $("#cancelEdit").addEventListener("click", () => toggleEdit(false));
+    els.editForm.addEventListener("submit", saveEdit);
+
+    els.themeBtn.addEventListener("click", () => {
+      document.body.classList.toggle("light");
+      localStorage.setItem(
+        "pokedex-theme",
+        document.body.classList.contains("light") ? "light" : "dark"
+      );
+      setThemeLabel();
+    });
+
+    setThemeLabel();
+    load();
+  </script>
+</body>
+</html>
